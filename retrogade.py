@@ -729,7 +729,7 @@ def return_mods(words_found, path_to_db):
         except KeyError:
             print "not found in model: {}".format(entry_term)
             continue
-        container[entry_term]['similar'].extend(zip(*most_similar_words)[0])
+        container[entry_term]['similar'].extend(most_similar_words)
     return container
 
 
@@ -785,12 +785,13 @@ def normalize_word_input(word_list):
     """
     First remove words in the word_list that are alike. This is done by normalizing the words using 
     edit distance......
-    How to find correct spelling? --> choose most occuring
+    How to find "correct" spelling? --> choose most occuring
     
     """
     #Words that haven't been tokenized properly, extra split on /
     splitted = set()
-    for word in word_list:
+    for word_element in word_list:
+        word = word_element[0]
         splitted.update(word.split('/'))
     
     most_freq = set()
@@ -799,15 +800,20 @@ def normalize_word_input(word_list):
         ranked_occurence = occurence(close_matches)
         most_freq.add(ranked_occurence)
     
-    return most_freq
+    ranked_on_similarity = []
+    only_words = zip(*word_list)[0]
+    for normalized in most_freq:
+        ranked_on_similarity.append(word_list[only_words.index(normalized)])        
+    
+    return sorted(ranked_on_similarity, key=lambda x:x[1], reverse=True)
 
 
 if __name__ == '__main__':
     path_new_data = ''
     files, folders, paths = loadData('sep_files/', '*')
-    normalized_data= preprocess(files)
+    normalized_data = preprocess(files)
     model = gensim.models.Word2Vec(normalized_data) #model creation
-    extracted_terms = word_collection(model.vocab.keys()) #word list
+    extracted_terms = return_word_collection(model.vocab.keys()) #word list
     dwn = Wn_grid_parser(Wn_grid_parser.odwn) #ODWN instantiation
     dwn.load_synonyms_dicts() #load data
     dwn_tops = dwn.tops() #top nodes in WN
