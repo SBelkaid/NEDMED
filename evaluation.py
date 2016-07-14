@@ -4,14 +4,14 @@ import pandas as pd
 from average_precision import *
 
 
-usage = '''
+usage = """
 usage: python evaluation.py <path_to_file>
-'''
+"""
 
 file_name = sys.argv[1]
 if not os.path.isfile(file_name):
 	print usage
-	sys.exit()
+	sys.exit(1)
 
 result_file = open(file_name, 'r')
 
@@ -30,5 +30,5 @@ for idx, val in enumerate(l):
 	else:
 		real.append(val.tolist())
 
-print mapk(real, predicted)
+print 'MAP val is: {}'.format(mapk(real, predicted))
 
