@@ -31,8 +31,9 @@ Usage
 
 
 
-Results
+Evaluation
 -------------
+The Mean Average Precision is used for the evaluation. The mean average precision for N words at position n is the average of the average precision of each word, i.e. Note this means that order matters. But it depends. Order matters only, if there is at least one incorrect prediction. The other words, if all predictions are correct, it doesn't matter in which order they are given. The most relevant results are supposed to show up first and lead to a higher MAP score
 
 
 Testing
