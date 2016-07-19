@@ -2,9 +2,6 @@
 A script to extract synonyms from mammograms. 
 
 """
-
-#!/bin/bash
-
 ##############################################
 # Author:   Soufyan Belkaid                  # 
 #           VU University of Amsterdam       #
