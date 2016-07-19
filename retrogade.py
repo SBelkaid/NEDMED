@@ -716,7 +716,7 @@ def return_mods(words_found, path_to_db):
         freq, mod, term = term_element
         # print freq, term, word
         try:
-            container[term]['modifiers'].append(mod)
+            container[term]['modifiers'].append((mod,freq))
         except KeyError:
             print "not found in container: {}".format(term)
         
@@ -800,7 +800,11 @@ def normalize_word_input(word_list):
     ranked_on_similarity = []
     only_words = zip(*word_list)[0]
     for normalized in most_freq:
-        ranked_on_similarity.append(word_list[only_words.index(normalized)])        
+        try:
+            ranked_on_similarity.append(word_list[only_words.index(normalized)])        
+        except ValueError, e:
+            pass
+        
     
     return sorted(ranked_on_similarity, key=lambda x:x[1], reverse=True)
 
@@ -903,7 +907,8 @@ if __name__ == '__main__':
     path_to_db = '~/Programming/terminology_extractor/ned_medDB.db'
     path_to_db = '~/Programming/terminology_extractor/ned_medDBCOPY.db'
     mods_and_synonyms = return_mods(['massa', 'kalk', 'tijd', 'locatie',
-                         'plaats', 'asymmetrie', 'lateraal', 'bi-rads'], path_to_db)
+                         'plaats', 'asymmetrie', 'lateraal', 'bi-rads', 'scar',
+                         'cyste', 'projectie'], path_to_db)
 
     df = pd.read_csv('documentation/voor Soufyan 2.csv')
     c_anatomie = df[df['anatomie']=='a']['Word [longest has 50 characters]']
