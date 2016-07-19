@@ -27,17 +27,25 @@ result_file = open(file_name, 'r')
 df = pd.read_csv(result_file)
 
 seq = df[df.columns.values[4:]]
-data = [df[df[col].notnull()][col].values for col in df.columns[4:]]
+data = [df[df[col].notnull()][col].values for col in df.columns]
 
 real = []
 predicted = []
+idx_array = []
 for idx, val in enumerate(data):
 	if idx % 2 == 0:
-		print 'added to predicted: ', idx
+		# print 'added to predicted: ', idx
+		idx_array.append(idx)
 		#doesn't work with numpy.array
 		predicted.append([e.lower().strip(' ') for e in val.tolist()])
 	else:
 		real.append([e.lower().strip(' ') for e in val.tolist()])
 
-print 'MAP val is: {}'.format(mapk(real, predicted, k))
+map_val, map_val_array = mapk(real, predicted, k)
+print '\nMAP val is: {} \n'.format(map_val)
+
+for idx, val in zip(idx_array,map_val_array):
+	print df.columns.values[idx], val
+
+
 

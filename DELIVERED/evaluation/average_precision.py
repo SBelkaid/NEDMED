@@ -60,6 +60,13 @@ def mapk(actual, predicted, k=10):
     -------
     score : double
             The mean average precision at k over the input lists
+    array : list
+            All the values which are used in the mean calculation
 
     """
-    return np.mean([apk(a,p,k) for a,p in zip(actual, predicted)])
+    all_average_prec = []
+    for a,p in zip(actual, predicted):
+        average_precision_val = apk(a,p,k)
+        all_average_prec.append(average_precision_val)
+    return np.mean(all_average_prec), all_average_prec
+
