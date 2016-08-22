@@ -106,7 +106,6 @@ def most_sim(word, matrix, mapping, top_n=5):
 	:return: sorted list of cosine distance values.
 	:rtype: list
 	"""
-
 	word_list = mapping.keys()
 	if not word in word_list:
 		print "Word not in vocab"
@@ -136,41 +135,48 @@ def load_sparse_csr(filename):
                          shape = loader['shape'])
 
 
-def save_dissect_format(file_name, csr_matrix, list_row_vals, dict_col_indx):
+def store_dissect_format(file_name, csr_matrix, list_row, list_col):
 	"""
 	Store csr matrix in mtx format to be processed by dissect module
 	and create a semantic space.
 
 	:param file_name: file name without extension
-	:param csr_matrix: scipy sparse matrix
-	:param list_row_vals: list of row entries in the matrix
-	:param dict_col_indx: dictionairy containing the column entries and their
+	:param csr_matrix: scipy coordinate matrix
+	:param list_row: list of row entries in the matrix
+	:param list_col dictionairy containing the column entries and their
 	indices. Returned by calling vectorizer.get_feature_names()
 	"""
-	outfile = TemporaryFile()
-	io.mmwrite(outfile, csr_matrix)
-	outfile.seek(0)
-	f = outfile.read().split('\n')
-	# print f
-	splitted = [line.split(' ') for line in f]	
-	s_mapping = {val: ' '.join(key).replace(' ', '_') for key,
-				 val in dict_col_indx.items()} # _ added for MWE's
-	#store dissect sm format
-	with open(file_name+'.sm', 'w') as f:
-		for el in splitted[3:-1]:
+	col = csr_matrix.col#, len(csr_matrix.col)
+	row = csr_matrix.row #, len(csr_matrix.row)
+	data = csr_matrix.data #, len(csr_matrix.data)
+	passed = []
+	with open(file_name+'.sm', 'w') as f1:
+		for i in range(len(data)):
+			r,c,v = list_row[row[i]], list_col[col[i]], data[i]
+			if not all([r,c,v]):
+				passed.append(i)
+				continue
+			# print r,c,v
 			try:
-				f.write('%s %s %s\n' % (list_row_vals[int(el[0])],
-					 s_mapping[int(el[1])], el[2]))
+				f1.write('%s\t%s\t%s\n' % (list_row[row[i]], list_col[col[i]], data[i]))
 			except (KeyError, IndexError), e:
-				print e, el
-	#store dissect rows
-	with open(file_name+'.rows', 'w') as f2:
-		for row in list_row_vals:
-			f2.write('%s\n' % row)
-	#store dissect columns
-	with open(file_name+'.cols', 'w') as f3:
-		for col in s_mapping.values():
-			f3.write('%s\n' % col)
+				print e
+	
+	imp_order_cols = []
+	with open(file_name+'.cols', 'w') as f2:	
+		for i in range(len(col)):
+			if not i in passed:
+				if not list_col[col[i]] in imp_order_cols:
+					imp_order_cols.append(list_col[col[i]])
+					f2.write('%s\n' % list_col[col[i]])
+	
+	imp_order_rows = []
+	with open(file_name+'.rows', 'w') as f3:
+		for i in range(len(row)):
+			if not i in passed:
+				if not list_row[row[i]] in imp_order_rows:
+					imp_order_rows.append(list_row[row[i]])
+					f3.write('%s\n' % list_row[row[i]])
 
 
 if __name__ == "__main__":
@@ -186,6 +192,8 @@ if __name__ == "__main__":
 	vectorizer = DictVectorizer()
 	X = vectorizer.fit_transform(dependency_dict.values())
 	mapping = vectorizer.vocabulary_
-	 # _ are added for MWE's
+	# _ are added for MWE's
 	key_list = [key.replace(' ', '_') for key in dependency_dict.keys()]
-	save_dissect_format(file_name, X, key_list, mapping)
+	reverse_mapping = {val: ' '.join(key).replace(' ', '_') for key,
+			 val in mapping.items()} # _ added for MWE's
+	store_dissect_format(file_name, X.tocoo(), key_list, reverse_mapping)
