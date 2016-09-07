@@ -166,57 +166,7 @@ def return_mods(words_found, path_to_db):
             continue
         singularized = [singularize(w) for w in zip(*most_similar_words)[0]]
         container[entry_term]['similar'].extend(singularized)
-        # container[entry_term]['similar'].extend(most_similar_words)
-        # print normalize_word_input(most_similar_words)
     return container
-
-
-def occurence(close_matches):
-    """
-    return the word with highest occurence according to trained Word2Vec model
-    :param close_matches: list of words 
-    :return: 
-
-    """
-    global model
-    count_seq = []
-    for word in close_matches:
-        try:
-            count_seq.append(model.vocab[word].count)
-        except KeyError:
-            count_seq.append(0)
-    
-    return close_matches[count_seq.index(max(count_seq))]
-
-
-def normalize_word_input(word_list):
-    """
-    First remove words in the word_list that are alike. This is done by normalizing the words using 
-    edit distance......
-    How to find "correct" spelling? --> choose most occuring
-    
-    """
-    #Words that haven't been tokenized properly, extra split on /
-    splitted = set()
-    for word_element in word_list:
-        word = word_element[0]
-        splitted.update(word.split('/'))
-    
-    most_freq = set()
-    for word in splitted:
-        close_matches = get_close_matches(word, splitted)
-        ranked_occurence = occurence(close_matches)
-        most_freq.add(ranked_occurence)
-    
-    ranked_on_similarity = []
-    only_words = zip(*word_list)[0]
-    for normalized in most_freq:
-        try:
-            ranked_on_similarity.append(word_list[only_words.index(normalized)])        
-        except ValueError:
-            pass
-        
-    return sorted(ranked_on_similarity, key=lambda x:x[1], reverse=True)
 
 
 if __name__ == '__main__':
