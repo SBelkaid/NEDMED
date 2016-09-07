@@ -227,15 +227,3 @@ if __name__ == '__main__':
     mods_and_synonyms = return_mods(['massa', 'kalk', 'tijd', 'locatie',
                          'plaats', 'asymmetrie', 'lateraal', 'bi-rads', 'scar',
                          'cyste', 'projectie'], path_to_db)
-
-    df = pd.read_csv('documentation/voor Soufyan 2.csv')
-    c_anatomie = df[df['anatomie']=='a']['Word [longest has 50 characters]']
-    c_arch = df[df['archasym']=='a']['Word [longest has 50 characters]']
-    c_locatie = df[df['plaats']=='p']['Word [longest has 50 characters]']
-    c_tijd = df[df['tijd']=='t']['Word [longest has 50 characters]']
-    c_massa = df[df['massa']=='m']['Word [longest has 50 characters]']
-    attr_mass = df[df['bij massa']=='bm']['Word [longest has 50 characters]']
-    c_path = df[df['path']=='pa']['Word [longest has 50 characters]']
-    c_kalk = df[df['kalk']=='k']['Word [longest has 50 characters]']
-    attr_kalk = df[df['bij calc']=='bc']['Word [longest has 50 characters]']
-
