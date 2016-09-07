@@ -9,42 +9,23 @@ A script to extract synonyms from mammograms.
 # Version:  2.0                              #
 ##############################################
 
-import difflib
-import networkx as nx
-import sys
+
 import re
 import os
-# import matplotlib.pyplot as plt
 from pattern.nl import singularize
-import pygraphviz as pgv
-import os
-import yaml
 import nltk
 import logging
 import time
 import gensim
 import pandas as pd
 import fnmatch
-import pickle
-from gensim import corpora
-from nltk.tokenize import RegexpTokenizer
-from OpenDutchWordnet import Wn_grid_parser
-from networkx.drawing.nx_agraph import graphviz_layout
-from KafNafParserPy import KafNafParser
-from networkx.readwrite import json_graph
-from collections import Counter
 from xml.etree.ElementTree import Element, SubElement, Comment
 from xml.dom import minidom
 from xml.etree import ElementTree
-from lxml.etree import XMLSyntaxError
 from subprocess import Popen, PIPE
-from sklearn.cluster import KMeans
 from difflib import get_close_matches
-from nltk.stem.snowball import SnowballStemmer
 from collections import defaultdict
-from collections import deque
 from sklearn.feature_extraction.text import CountVectorizer
-from difflib import get_close_matches
 
 
 PARSED_FILES_DIR = 'parsed_files/'
@@ -232,7 +213,7 @@ def normalize_word_input(word_list):
     for normalized in most_freq:
         try:
             ranked_on_similarity.append(word_list[only_words.index(normalized)])        
-        except ValueError, e:
+        except ValueError:
             pass
         
     return sorted(ranked_on_similarity, key=lambda x:x[1], reverse=True)
