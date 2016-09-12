@@ -18,12 +18,17 @@ from collections import defaultdict
 
 
 usage = """
-Usage: python write_to_csv.py path_to_result_file path_to_json
+Usage: python write_to_csv.py path_to_result_file path_to_json output_file_name
 
 path_to_result_file: path to a file containing correct concepts 
 path_to_json: json file containing the words used to find similar words to concepts
 mods_and_syns output from retrogade.py or kaf_dep_parser.py
+output_file_name: csv file
 """
+
+if len(sys.argv) != 4:
+    print usage
+    sys.exit(1)
 
 MAPPING = defaultdict(str,
             {'asymmetrie': 'archasym',
@@ -36,6 +41,10 @@ MAPPING = defaultdict(str,
              'projectie': 'proj',
              'scar': 'path',
              'tijd': 'tijd'})
+"""
+The mapping is to match the column names with each other. For instance the word asymmetrie
+is supposed to be the first column in the pair asymmetrie and archasym 
+"""
 
 path_res_file = sys.argv[1]
 df = pd.read_json(open(sys.argv[2], 'r')) #mods_and_syns from retrogade or kaf_dep_parser
@@ -43,20 +52,20 @@ df = pd.read_json(open(sys.argv[2], 'r')) #mods_and_syns from retrogade or kaf_d
 stacked = df.stack()
 ts = stacked['similar']
 result_format = pd.read_csv(open(path_res_file, 'r')).dropna(how='all')
-data = pd.concat([pd.DataFrame(ts[row], columns=['{}'.format(row), 
-		'{} similarity'.format(row)]) for row in ts.index], axis=1)
+# data = pd.concat([pd.DataFrame(ts[row], columns=['{}'.format(row), 
+#         '{} similarity'.format(row)]) for row in ts.index], axis=1)
+data = pd.concat([pd.DataFrame(ts[row], columns=['{}'.format(row)])
+         for row in ts.index], axis=1)
 result_format = result_format[result_format.columns[result_format.columns.str.contains(
-		'correct')]].dropna(how='all')
+        'correct')]].dropna(how='all')
 
 combined = []
 only_terms = data[data.columns[~data.columns.str.contains('similarity')]]
 for col in only_terms.columns:
-	according_col = result_format.columns.str.contains(MAPPING[col])
-	if np.any(according_col):
-		combined.append(data[col])
-		combined.append(result_format[result_format.columns[according_col]])
+    according_col = result_format.columns.str.contains(MAPPING[col])
+    if np.any(according_col):
+        combined.append(data[col])
+        combined.append(result_format[result_format.columns[according_col]])
 
 combined = pd.concat(combined, axis=1).dropna(how='all')
-
-
-
+combined.to_csv(sys.argv[3], index=False)

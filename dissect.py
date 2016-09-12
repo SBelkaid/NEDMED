@@ -27,12 +27,18 @@ import os
 import time
 
 
+usage = """
+Usage: python dissect.py dissect_format_file_name
+
+dissect_format_file_name: path to a file containing dissect format
+"""
+
 CMD_EXTRACTOR_SCRIPT = '~/Programming/terminology_extractor/extract_patterns.py'
+file_name = sys.argv[1]
 
-
-my_space = Space.build(data = "ppmi.sm",
-                       rows = "ppmi.rows",
-                       cols = "ppmi.cols",
+my_space = Space.build(data = file_name+".sm",
+                       rows = file_name+".rows",
+                       cols = file_name+".cols",
                        format = "sm")
 
 my_space = my_space.apply(PpmiWeighting())
@@ -63,6 +69,7 @@ def return_mods(words_found, path_to_db):
     the PPMI model search of the words in words_found
     :rtype: dictionairy
     """
+    global my_space
     top = Element('patterns')
 
     comment = Comment('Pattern file for terminology extractor')
@@ -163,12 +170,14 @@ def normalize_word_input(word_list):
         try:
             ranked_on_similarity.append(word_list[only_words.index(normalized)])        
         except ValueError, e:
-            pass
-        
-    
+            pass  
     return sorted(ranked_on_similarity, key=lambda x:x[1], reverse=True)
 
+
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+            print usage
+            sys.exit(1)
 	path_to_db = '~/Programming/terminology_extractor/ned_medDBCOPY.db' #added all the articles
 	mods_and_synonyms = return_mods(['massa', 'kalk', 'tijd', 'locatie',
                          'plaats', 'asymmetrie', 'lateraal', 'bi-rads', 'scar',

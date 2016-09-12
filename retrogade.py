@@ -1,5 +1,5 @@
 """
-A script to extract synonyms from mammograms. 
+A script to extract synonyms from mammograms. Using Word2Vec
 
 """
 ##############################################
@@ -12,7 +12,8 @@ A script to extract synonyms from mammograms.
 
 import re
 import os
-from pattern.nl import singularize
+import sys
+import json
 import nltk
 import logging
 import time
@@ -20,6 +21,7 @@ import gensim
 import pandas as pd
 import fnmatch
 from xml.etree.ElementTree import Element, SubElement, Comment
+from pattern.nl import singularize
 from xml.dom import minidom
 from xml.etree import ElementTree
 from subprocess import Popen, PIPE
@@ -36,6 +38,13 @@ PATTERN = re.compile(r'[\./]')
 PATH_TREE_TAGGER  ='~/Programming/terminology_extractor/libs/treetagger_plain2naf/treetagger_plain2naf.py'
 CMD_EXTRACTOR_SCRIPT = '~/Programming/terminology_extractor/extract_patterns.py'
 logging.basicConfig(filename='logging.log', level=logging.DEBUG)
+
+usage = """
+python retrogade.py path_to_db path_to_files
+
+path_to_db: path to the terminology database from terminology_extractor (index_files.py)
+path_to_files: path to directory containing KAF/NAF files from convert_to_naf.sh
+"""
 
 
 def loadData(dir_name, pattern):
@@ -156,13 +165,13 @@ def return_mods(words_found, path_to_db):
         try:
             container[term]['modifiers'].append((mod,freq))
         except KeyError:
-            print "not found in container: {}".format(term)
+            print>>sys.stderr, "not found in container: {}".format(term)
         
     for entry_term in container.keys():
         try:
             most_similar_words = model.most_similar(entry_term)
         except KeyError:
-            print "not found in model: {}".format(entry_term)
+            print>>sys.stderr, "not found in model: {}".format(entry_term)
             continue
         singularized = [singularize(w) for w in zip(*most_similar_words)[0]]
         container[entry_term]['similar'].extend(singularized)
@@ -170,10 +179,15 @@ def return_mods(words_found, path_to_db):
 
 
 if __name__ == '__main__':
-    files, folders, paths = loadData('sep_files/', '*')
+    if not len(sys.argv) == 3:
+        print usage
+        sys.exit(1)
+    files, folders, paths = loadData(sys.argv[2], '*')
     normalized_data = preprocess(files)
     model = gensim.models.Word2Vec(normalized_data) #model creation
-    path_to_db = '~/Programming/terminology_extractor/ned_medDBCOPY.db' #added all the articles
-    mods_and_synonyms = return_mods(['massa', 'kalk', 'tijd', 'locatie',
-                         'plaats', 'asymmetrie', 'lateraal', 'bi-rads', 'scar',
-                         'cyste', 'projectie'], path_to_db)
+    # path_to_db = '~/Programming/terminology_extractor/ned_medDBCOPY.db' #added all the articles
+    path_to_db = sys.argv[1]
+    mods_and_synonyms = return_mods([u'massa', u'kalk', u'tijd', u'locatie',
+                         u'plaats', u'asymmetrie', u'lateraal', u'bi-rads', u'scar',
+                         u'cyste', u'projectie'], path_to_db)
+    print>>sys.stdout, json.dumps(mods_and_synonyms)
